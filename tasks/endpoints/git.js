@@ -22,14 +22,14 @@
  * THE SOFTWARE.
  */
 
-module.exports = function(grunt) {
+module.exports = function(grunt, async) {
   /* Verbosity */
   var streams = [undefined, undefined, undefined]
   if(grunt.option('verbose')) {
     streams[1] = process.stdout
     streams[2] = process.stderr
   }
-  return {
+  var objToReturn = {
     /* Ensure that the VCS is installed on the system, and therefore usable. */
     setUp: function(parentArg, done) {
       grunt.util.spawn({
@@ -104,6 +104,19 @@ module.exports = function(grunt) {
       }, done)
     },
 
+    removeVersionTags: function(tags, done) {
+      async.eachSeries(tags, objToReturn.removeTag, done);
+    },
+
+    removeTag: function(tag, done) {
+      var args = ['tag', '-d', tag]
+      grunt.util.spawn({
+        cmd: 'git',
+        args: args,
+        opts: { stdio: streams }
+      }, done);
+    },
+
     /* 'Tag' the release */
     tag: function(tagname, msg, done) {
       var args = ['tag', tagname]
@@ -136,6 +149,8 @@ module.exports = function(grunt) {
         opts: { stdio: streams }
       }, done)
     }
-  }
+  };
+
+  return objToReturn;
 }
 
