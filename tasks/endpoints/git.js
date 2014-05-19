@@ -105,11 +105,20 @@ module.exports = function(grunt, async) {
     },
 
     removeVersionTags: function(tags, done) {
-      async.eachSeries(tags, objToReturn.removeTag, done);
+      async.eachSeries(tags, objToReturn.removeLocalTag, done);
     },
 
-    removeTag: function(tag, done) {
-      var args = ['tag', '-d', tag]
+    removeLocalTag: function(tag, done) {
+      var args = ['tag', '-d', tag];
+      grunt.util.spawn({
+        cmd: 'git',
+        args: args,
+        opts: { stdio: streams }
+      }, done);
+    },
+
+    removeRemoteTag: function(tag, done) {
+      var args = ['push', 'origin', ':refs/tags/' + tag];
       grunt.util.spawn({
         cmd: 'git',
         args: args,

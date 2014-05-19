@@ -21,12 +21,12 @@ exports.shouldCallRemoveTagWhenRemovingVersionTags = function(test) {
   var testee = require('../../../../tasks/endpoints/git.js')(grunt, async);
   testee.removeVersionTags(tags, done);
 
-  test.ok(mock.calledWith(tags, testee.removeTag, done));
+  test.ok(mock.calledWith(tags, testee.removeLocalTag, done));
 
   test.done();
 };
 
-exports.shouldRemoveGitTag = function(test) {
+exports.shouldRemoveLocalGitTag = function(test) {
   test.expect(1);
 
   var grunt = {
@@ -44,13 +44,50 @@ exports.shouldRemoveGitTag = function(test) {
   var done = function() {};
 
   var testee = require('../../../../tasks/endpoints/git.js')(grunt);
-  testee.removeTag(tag, done);
+  testee.removeLocalTag(tag, done);
 
   test.ok(mock.calledWith({ 
     cmd: 'git',
     args: ['tag', '-d', tag],
     opts: { stdio: [undefined, undefined, undefined]}
   }, done));
+
+  test.done();
+};
+
+exports.shouldRemoveRemoteGitTag = function(test) {
+  test.expect(1);
+
+  var grunt = {
+    option: function() {},
+    util: {
+      spawn: function() {}
+    }
+  };
+
+  var sinon = require('sinon');
+
+  var mock = sinon.spy(grunt.util, 'spawn');
+
+  var tag = '1.0.0-SNAPSHOT+1';
+  var done = function() {};
+
+  var testee = require('../../../../tasks/endpoints/git.js')(grunt);
+  testee.removeRemoteTag(tag, done);
+
+  test.doesNotThrow(function () {
+    sinon.assert.calledWith(mock, { 
+      cmd: 'git',
+      args: ['push', 'origin', ':refs/tags/' + tag],
+      opts: { stdio: [undefined, undefined, undefined]}
+    }, done);
+  });
+
+  // test.ok(mock.calledWith({ 
+  //   cmd: 'git',
+  //   args: ['push', 'origin', ':refs/tag/' + tag],
+  //   opts: { stdio: [undefined, undefined, undefined]}
+  // }, done));
 
   test.done();
 };
