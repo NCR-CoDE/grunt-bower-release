@@ -108,13 +108,29 @@ module.exports = function(grunt, async) {
       async.eachSeries(tags, objToReturn.removeLocalTag, done);
     },
 
+    getVersionTags: function(version, done) {
+      grunt.util.spawn({
+        cmd: 'git',
+        args: ['tag'],
+        opts: { stdio: streams }
+      }, function(error, result) {
+        var tags = result.stdout.split(/\n/);
+
+        done(tags.filter(function(tag) {
+          return tag.indexOf(version) === 0;
+        }));
+      });
+    },
+
     removeLocalTag: function(tag, done) {
       var args = ['tag', '-d', tag];
       grunt.util.spawn({
         cmd: 'git',
         args: args,
         opts: { stdio: streams }
-      }, done);
+      }, function () {
+        removeRemoteTag(tag, done);
+      });
     },
 
     removeRemoteTag: function(tag, done) {

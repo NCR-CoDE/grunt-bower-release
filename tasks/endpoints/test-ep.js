@@ -66,6 +66,26 @@ module.exports = function(grunt) {
       done()
     },
 
+    getVersionTags: function(version, done) {
+      endPoint.called.call('getVersionTags', arguments);
+      done();
+    },
+
+    removeVersionTags: function(tags, done) {
+      endPoint.called.call('removeVersionTags', arguments);
+      done();
+    },
+
+    removeLocalTag: function(tag, done) {
+      endPoint.called.call('removeLocalTag', arguments);
+      done();
+    },
+
+    removeRemoteTag: function(tag, done) {
+      endPoint.called.call('removeRemoteTag', arguments);
+      done();
+    },
+
     /* 'Tag' the release */
     tag: function(tagname, msg, done) {
       endPoint.called.call('tag', arguments);

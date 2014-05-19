@@ -151,6 +151,17 @@
         ]
       }
     },
+    "getVersionTags": {
+      "times": 1,
+      "with": {
+        "0": "1.0.0"
+      }
+    },
+    "removeVersionTags": {
+      "times": 1,
+      "with": {
+      }
+    },
     "commit": {
       "times": 1,
       "with": {

@@ -263,10 +263,19 @@ module.exports = function(grunt) {
         if(typeof msg !== 'string' || !msg.length)
           msg = 'Bumped version to ' + bowerJSON.version
         endpoint.commit(msg, function(err) {
-          /* Tag name must be valid semver -- but I'm not validating this here. */
-          /* TODO: Validate this here! */
-          endpoint.tag(bowerJSON.version, makeTagMsg(options.packageName), tagged)
+          // endpoint.tag(bowerJSON.version, makeTagMsg(options.packageName), tagged);
+          endpoint.getVersionTags(bowerJSON.version, gotVersionTags);
         })
+      }
+
+      function gotVersionTags(versionTags) {
+        endpoint.removeVersionTags(versionTags, removedVersionTags);
+      }
+
+      function removedVersionTags() {
+        /* Tag name must be valid semver -- but I'm not validating this here. */
+        /* TODO: Validate this here! */
+        endpoint.tag(bowerJSON.version, makeTagMsg(options.packageName), tagged);
       }
 
       function tagged(err) {

@@ -46,11 +46,13 @@ exports.shouldRemoveLocalGitTag = function(test) {
   var testee = require('../../../../tasks/endpoints/git.js')(grunt);
   testee.removeLocalTag(tag, done);
 
-  test.ok(mock.calledWith({ 
-    cmd: 'git',
-    args: ['tag', '-d', tag],
-    opts: { stdio: [undefined, undefined, undefined]}
-  }, done));
+  test.doesNotThrow(function() {
+    sinon.assert.calledWith(mock, {
+      cmd: 'git',
+      args: ['tag', '-d', tag],
+      opts: { stdio: [undefined, undefined, undefined] }
+    }, sinon.match.func)
+  });
 
   test.done();
 };
@@ -82,12 +84,6 @@ exports.shouldRemoveRemoteGitTag = function(test) {
       opts: { stdio: [undefined, undefined, undefined]}
     }, done);
   });
-
-  // test.ok(mock.calledWith({ 
-  //   cmd: 'git',
-  //   args: ['push', 'origin', ':refs/tag/' + tag],
-  //   opts: { stdio: [undefined, undefined, undefined]}
-  // }, done));
 
   test.done();
 };

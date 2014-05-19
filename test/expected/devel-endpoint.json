@@ -231,6 +231,17 @@
         "0": "Bumped version to 1.0.0"
       }
     },
+    "getVersionTags": {
+      "times": 2,
+      "with": {
+        "0": "1.0.0"
+      }
+    },
+    "removeVersionTags": {
+      "times": 2,
+      "with": {
+      }
+    },
     "tag": {
       "times": 2,
       "with": {
