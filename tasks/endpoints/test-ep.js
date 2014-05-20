@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-module.exports = function(grunt) {
+function Test(grunt) {
   /* Verbosity */
   var streams = [undefined, undefined, undefined],
     parent = {},
@@ -116,3 +116,4 @@ module.exports = function(grunt) {
   return endPoint;
 }
 
+module.exports = Test;

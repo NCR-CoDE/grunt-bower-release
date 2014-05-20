@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-module.exports = function(grunt, async) {
+function Git(grunt, async) {
   /* Verbosity */
   var streams = [undefined, undefined, undefined]
   if(grunt.option('verbose')) {
@@ -180,3 +180,4 @@ module.exports = function(grunt, async) {
   return objToReturn;
 }
 
+module.exports = Git;

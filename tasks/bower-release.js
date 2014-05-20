@@ -25,6 +25,14 @@
 'use strict';
 
 module.exports = function(grunt) {
+
+  var di = require('di');
+  var injectionModule = require('./injection-module');
+  var injector = new di.Injector([injectionModule(grunt)]);
+
+  var Git = require('./endpoints/git');
+  var Test = require('./endpoints/test-ep');
+
   /*
    * Other VCS tools can be added here as needed in the future.
    * The following functions are required:
@@ -41,8 +49,8 @@ module.exports = function(grunt) {
    * falsy ones) are ignored.
    */
   var endpoints = {
-    git: require('./endpoints/git')(grunt, require('async')),
-    test: require('./endpoints/test-ep')(grunt)
+    git: injector.instantiate(Git),
+    test: injector.instantiate(Test)
   }
 
   grunt.registerMultiTask('bowerRelease',
