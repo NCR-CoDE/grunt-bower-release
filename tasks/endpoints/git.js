@@ -109,13 +109,14 @@ module.exports = function(grunt, async) {
     },
 
     getVersionTags: function(version, done) {
+      grunt.verbose.writeln('git tag');
+
       grunt.util.spawn({
         cmd: 'git',
-        args: ['tag'],
-        opts: { stdio: streams }
+        args: ['tag']/*,
+        opts: { stdio: streams }*/
       }, function(error, result) {
         var tags = result.stdout.split(/\n/);
-
         done(tags.filter(function(tag) {
           return tag.indexOf(version) === 0;
         }));
@@ -129,7 +130,7 @@ module.exports = function(grunt, async) {
         args: args,
         opts: { stdio: streams }
       }, function () {
-        removeRemoteTag(tag, done);
+        objToReturn.removeRemoteTag(tag, done);
       });
     },
 

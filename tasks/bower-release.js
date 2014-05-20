@@ -41,7 +41,7 @@ module.exports = function(grunt) {
    * falsy ones) are ignored.
    */
   var endpoints = {
-    git: require('./endpoints/git')(grunt),
+    git: require('./endpoints/git')(grunt, require('async')),
     test: require('./endpoints/test-ep')(grunt)
   }
 
@@ -263,8 +263,14 @@ module.exports = function(grunt) {
         if(typeof msg !== 'string' || !msg.length)
           msg = 'Bumped version to ' + bowerJSON.version
         endpoint.commit(msg, function(err) {
-          // endpoint.tag(bowerJSON.version, makeTagMsg(options.packageName), tagged);
-          endpoint.getVersionTags(bowerJSON.version, gotVersionTags);
+          if (options.overwriteVersion === true) {
+            endpoint.getVersionTags(bowerJSON.version, gotVersionTags);
+          } else {
+            /* Tag name must be valid semver -- but I'm not validating this here. */
+            /* TODO: Validate this here! */
+            console.log('hello');
+            endpoint.tag(bowerJSON.version, makeTagMsg(options.packageName), tagged);
+          }
         })
       }
 
@@ -275,12 +281,19 @@ module.exports = function(grunt) {
       function removedVersionTags() {
         /* Tag name must be valid semver -- but I'm not validating this here. */
         /* TODO: Validate this here! */
-        endpoint.tag(bowerJSON.version, makeTagMsg(options.packageName), tagged);
+        var actualTag = bowerJSON.version + '+' + new Date().getTime();
+        endpoint.tag(actualTag, makeTagMsg(options.packageName), function() { 
+          taggedWithTimestamp(actualTag);
+        });
       }
 
       function tagged(err) {
         /* After commiting/tagging the release, push to the server */
         endpoint.push(options.branchName, bowerJSON.version, pushed)
+      }
+
+      function taggedWithTimestamp(tag) {
+        endpoint.push(options.branchName, tag, pushed);
       }
 
       function pushed(err) {
