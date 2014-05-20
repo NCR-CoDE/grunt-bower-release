@@ -268,7 +268,6 @@ module.exports = function(grunt) {
           } else {
             /* Tag name must be valid semver -- but I'm not validating this here. */
             /* TODO: Validate this here! */
-            console.log('hello');
             endpoint.tag(bowerJSON.version, makeTagMsg(options.packageName), tagged);
           }
         })
