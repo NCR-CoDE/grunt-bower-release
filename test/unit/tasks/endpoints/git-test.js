@@ -21,7 +21,9 @@ exports.shouldCallRemoveTagWhenRemovingVersionTags = function(test) {
   var testee = require('../../../../tasks/endpoints/git.js')(grunt, async);
   testee.removeVersionTags(tags, done);
 
-  test.ok(mock.calledWith(tags, testee.removeLocalTag, done));
+  test.doesNotThrow(function () { 
+    sinon.assert.calledWith(mock, tags, testee.removeLocalTag, done)
+  });
 
   test.done();
 };
