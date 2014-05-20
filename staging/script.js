@@ -1,0 +1,1 @@
+var s = '1.0.0-SNAPSHOT-1';
