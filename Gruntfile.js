@@ -100,7 +100,7 @@ module.exports = function(grunt) {
 
     // Unit tests.
     nodeunit: {
-      tests: ['test/*_test.js', 'test/unit/**/*-test.js']
+      tests: ['test/*_test.js', 'test/**/*-test.js']
     }
   });
 

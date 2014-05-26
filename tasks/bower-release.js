@@ -24,7 +24,7 @@
 
 'use strict';
 
-module.exports = function(grunt) {
+module.exports = function (grunt) {
 
   var di = require('di');
   var injectionModule = require('./injection-module');
@@ -54,8 +54,8 @@ module.exports = function(grunt) {
   }
 
   grunt.registerMultiTask('bowerRelease',
-    'Push bower component files to git endpoint and publish', function() {
-    var fs = require('fs.extra'),
+    'Push bower component files to git endpoint and publish', function () {
+      var fs = require('fs.extra'),
         path = require('path'),
         os = require('os'),
         startDir = process.cwd(), endpoint,
@@ -68,273 +68,297 @@ module.exports = function(grunt) {
         bowerJSON,
         bowerFile
 
-    if(grunt.option('verbose')) {
-      grunt.log.writeln("Options: ".cyan)
-      Object.keys(options).forEach(function(key) {
-        grunt.log.writeln('  ' + key.cyan + ': ' + options[key].yellow)
+      if (grunt.option('verbose')) {
+        grunt.log.writeln("Options: ".cyan)
+        Object.keys(options).forEach(function (key) {
+          grunt.log.writeln('  ' + key.cyan + ': ' + options[key].yellow)
+        })
+      }
+
+      /* Read Bower configuration */
+      ['bower.json', 'component.json'].forEach(function (configFile) {
+        if (!bowerJSON && grunt.file.isFile(configFile)) {
+          bowerJSON = grunt.file.readJSON(configFile)
+          bowerFile = configFile
+        }
       })
-    }
 
-    /* Read Bower configuration */
-    ['bower.json', 'component.json'].forEach(function (configFile) {
-      if (!bowerJSON && grunt.file.isFile(configFile)) {
-        bowerJSON = grunt.file.readJSON(configFile)
-        bowerFile = configFile
-      }
-    })
-
-    /* Fail if we don't have a bower configuration */
-    if(!bowerJSON) {
-      return finish(new Error('Missing \'bower.json\' or \'component.json\''))
-    }
-
-    /*
-     * TODO: Convert any such comments into jsdoc/yuidoc format, so that they can easily be transformed into markup.
-     *
-     * Supported properties:
-     *   'files'       -- Array of objects/strings describing files meant to be added to the published commit.
-     *   'endpoint'    -- String representing the git endpoint to use. (Currently only git is supported)
-     *   'branchName'      -- An optional branchName name for the endpoint
-     *   'packageName' -- The name of the package in the Bower repository.
-     *   'stageDir'    -- Directory to build temporary git repository in (defaults to 'staging')
-     */
-
-    if(typeof options.endpoint === 'undefined')
-      options.endpoint = bowerJSON.endpoint
-
-    /* Fail if we don't have an endpoint */
-    if(typeof options.endpoint === 'undefined')
-      return finish(new Error('Missing required \'endpoint\' parameter'))
-
-    bowerJSON.endpoint = options.endpoint
-
-    /* Override package name */
-    if(typeof options.packageName === 'string')
-      bowerJSON.name = options.packageName
-
-    /* Override main files */
-    if(typeof options.main === 'string' || options.main instanceof Array)
-      bowerJSON.main = options.main
-
-    var dependencies = {};
-
-    if (options.extendDependencies == true)
-      dependencies = bowerJSON.dependencies || {};
-
-    delete bowerJSON.dependencies;
-
-    /* TODO: Support overriding dependencies by either extending, or
-     * replacing the existing ones... For now just extend
-     */
-    if(typeof options.dependencies === 'object' || options.extendDependencies)
-      bowerJSON.dependencies = grunt.util._.extend(dependencies || {}, options.dependencies || {})
-
-    /* TODO: Support devDependency overriding? Is that really needed? */
-
-    /* For now, 'git' is the only supported endpoint type, and we aren't doing anything
-     * complicated to figure out the correct VCS or protocol. So just assume 'git'
-     */
-    endpoint = endpoints[options.endpointType]
-
-    /* Make sure that the endpoint is actually usable (eg, git or mercurial or whatever is installed) */
-    endpoint.setUp(this, ready)
-
-    function ready(err) {
-      if(err) return finish(err)
-
-      /* Make stageDir absolute */
-      options.stageDir = path.resolve(options.stageDir)
-
-      /* Fail if stageDir is the current directory */
-      if(options.stageDir === startDir) {
-        finish(new Error('Cannot use current working directory as stageDir'))
-        return false
+      /* Fail if we don't have a bower configuration */
+      if (!bowerJSON) {
+        return finish(new Error('Missing \'bower.json\' or \'component.json\''))
       }
 
-      /* Make sure stageDir either does not exist, or is a directory */
-      var stat
-      try {
-        stat = fs.statSync(options.stageDir)
-        if(stat && !stat.isDirectory()) {
-          finish(new Error('stageDir is not a directory'))
+      /*
+       * TODO: Convert any such comments into jsdoc/yuidoc format, so that they can easily be transformed into markup.
+       *
+       * Supported properties:
+       *   'files'       -- Array of objects/strings describing files meant to be added to the published commit.
+       *   'endpoint'    -- String representing the git endpoint to use. (Currently only git is supported)
+       *   'branchName'      -- An optional branchName name for the endpoint
+       *   'packageName' -- The name of the package in the Bower repository.
+       *   'stageDir'    -- Directory to build temporary git repository in (defaults to 'staging')
+       */
+
+      if (typeof options.endpoint === 'undefined')
+        options.endpoint = bowerJSON.endpoint
+
+      /* Fail if we don't have an endpoint */
+      if (typeof options.endpoint === 'undefined')
+        return finish(new Error('Missing required \'endpoint\' parameter'))
+
+      bowerJSON.endpoint = options.endpoint
+
+      /* Override package name */
+      if (typeof options.packageName === 'string')
+        bowerJSON.name = options.packageName
+
+      /* Override main files */
+      if (typeof options.main === 'string' || options.main instanceof Array)
+        bowerJSON.main = options.main
+
+      var dependencies = {};
+
+      if (options.extendDependencies == true)
+        dependencies = bowerJSON.dependencies || {};
+
+      delete bowerJSON.dependencies;
+
+      /* TODO: Support overriding dependencies by either extending, or
+       * replacing the existing ones... For now just extend
+       */
+      if (typeof options.dependencies === 'object' || options.extendDependencies)
+        bowerJSON.dependencies = grunt.util._.extend(dependencies || {}, options.dependencies || {})
+
+      /* TODO: Support devDependency overriding? Is that really needed? */
+
+      /* For now, 'git' is the only supported endpoint type, and we aren't doing anything
+       * complicated to figure out the correct VCS or protocol. So just assume 'git'
+       */
+      endpoint = endpoints[options.endpointType]
+
+      /* Make sure that the endpoint is actually usable (eg, git or mercurial or whatever is installed) */
+      endpoint.setUp(this, ready)
+
+      function ready(err) {
+        if (err) return finish(err)
+
+        /* Make stageDir absolute */
+        options.stageDir = path.resolve(options.stageDir)
+
+        /* Fail if stageDir is the current directory */
+        if (options.stageDir === startDir) {
+          finish(new Error('Cannot use current working directory as stageDir'))
           return false
         }
-      } catch(e) { /* ENOENT */ }
 
-      if(typeof stat !== 'undefined')
-        fs.rmrfSync(options.stageDir)
-      fs.mkdirRecursiveSync(options.stageDir)
-      process.chdir(options.stageDir)
-      /* Once we're in the stageDir, we can check out the existing code.
-       * It doesn't matter if checkout fails, however.
-       */
-      endpoint.clone(options.endpoint, options.branchName, '.', cloned)
-      function cloned(err) {
-        /* An error may have happened, but isn't really consequential.
-         * Now, copy in each of the files that we care about.
-         */
-        process.chdir(startDir)
-        var files = [];
-        /* bower.json / component.json needs to be copied specially, because
-         * some fields in it may be overridden
-         */
-        if (bowerFile) files.push(bowerFile)
-        grunt.file.write(options.stageDir + '/' + bowerFile,
-          JSON.stringify(bowerJSON, null, 2))
-        copyBuildFilesToStage()
-      }
+        /* Make sure stageDir either does not exist, or is a directory */
+        var stat
+        try {
+          stat = fs.statSync(options.stageDir)
+          if (stat && !stat.isDirectory()) {
+            finish(new Error('stageDir is not a directory'))
+            return false
+          }
+        } catch (e) { /* ENOENT */
+        }
 
-      function copyBuildFilesToStage(){
-        grunt.util.async.map(self.files, function(item, next) {
-          grunt.util.async.map(item.src, copyItemSrcsToDest(item), function(err, results) {
-            next(err, results)
+        if (typeof stat !== 'undefined')
+          fs.rmrfSync(options.stageDir)
+        fs.mkdirRecursiveSync(options.stageDir)
+        process.chdir(options.stageDir)
+        /* Once we're in the stageDir, we can check out the existing code.
+         * It doesn't matter if checkout fails, however.
+         */
+        endpoint.clone(options.endpoint, options.branchName, '.', cloned)
+        function cloned(err) {
+          if (err !== null && err !== undefined) {
+            failTask(err);
+          }
+          /* An error may have happened, but isn't really consequential.
+           * Now, copy in each of the files that we care about.
+           */
+          process.chdir(startDir)
+          var files = [];
+          /* bower.json / component.json needs to be copied specially, because
+           * some fields in it may be overridden
+           */
+          if (bowerFile) files.push(bowerFile)
+          grunt.file.write(options.stageDir + '/' + bowerFile,
+            JSON.stringify(bowerJSON, null, 2))
+          copyBuildFilesToStage()
+        }
+
+        function copyBuildFilesToStage() {
+          grunt.util.async.map(self.files, function (item, next) {
+            grunt.util.async.map(item.src, copyItemSrcsToDest(item), function (err, results) {
+              next(err, results)
+            })
+
+          }, copiedFiles)
+        }
+
+        function copyItemSrcsToDest(item) {
+          return function copySrcToDest(src, next) {
+            var dest
+            if (typeof item.orig.dest === 'undefined')
+              dest = getExpandedStageDest(item)
+            else if (detectDestType(item.orig.dest) === 'directory')
+              dest = getUserDefinedDestDir(item)
+            else
+              dest = getUserDefinedDestFile(item)
+
+            if (grunt.file.isDir(src)) {
+              grunt.verbose.writeln('Creating ' + dest.cyan)
+              grunt.file.mkdir(dest)
+              next()
+            } else {
+              grunt.verbose.writeln('Copying ' + src.cyan + ' -> ' + dest.cyan)
+              grunt.file.copy(src, dest)
+              next(null, dest)
+            }
+
+          }
+        }
+
+        function getExpandedStageDest(item) {
+          var stageFile = grunt.file.expandMapping([item.dest], options.stageDir, {
+            cwd: item.orig.cwd || startDir
           })
+          return stageFile[0].dest
+        }
 
-        }, copiedFiles)
-      }
+        function getUserDefinedDestFile(item) {
+          return item.dest
+        }
 
-      function copyItemSrcsToDest(item) {
-        return function copySrcToDest (src, next) {
-          var dest
-          if(typeof item.orig.dest === 'undefined')
-            dest = getExpandedStageDest(item)
-          else if(detectDestType(item.orig.dest) === 'directory')
-            dest = getUserDefinedDestDir(item)
-          else
-            dest = getUserDefinedDestFile(item)
+        function getUserDefinedDestDir(item, src) {
+          var isExpandedPair = item.orig.expand || false
+          return (isExpandedPair) ? item.dest : unixifyPath(path.join(item.dest, src))
+        }
 
-          if(grunt.file.isDir(src)) {
-            grunt.verbose.writeln('Creating ' + dest.cyan)
-            grunt.file.mkdir(dest)
-            next()
+        function detectDestType(dest) {
+          if (grunt.util._.endsWith(dest, '/'))
+            return 'directory'
+          return 'file'
+        }
+
+        function unixifyPath(filepath) {
+          if (process.platform === 'win32')
+            return filepath.replace(/\\/g, '/')
+          return filepath
+        }
+
+        function copiedFiles(err, results) {
+          var files = []
+          results.forEach(function (item) {
+            if (item instanceof Array)
+              item.forEach(function (item) {
+                files.push(item)
+              })
+            else if (typeof item === 'string')
+              files.push(item)
+          })
+          /* The package bower.json or component.json file needs to be added to the repository, in
+           * order for bower's magic to really work. So it needs to be added here.
+           */
+          files.push(bowerFile)
+          /* After copying files in, it is necessary to add them to the repository.
+           * The VCS plugin is not responsible for comprehension of the grunt file
+           * objects, and so we can do that here.
+           */
+          process.chdir(options.stageDir)
+          endpoint.add(files, addedFiles)
+        }
+
+        function addedFiles(err) {
+          /* Files have been added to the repository (assuming this didn't fail)
+           * At this point, commit and tag the changeset
+           */
+          var msg = grunt.option('m') || grunt.option('message')
+          if (typeof msg !== 'string' || !msg.length)
+            msg = 'Bumped version to ' + bowerJSON.version
+          endpoint.commit(msg, shouldOverwriteTag)
+        }
+
+        function shouldOverwriteTag() {
+          if (options.overwriteTag) {
+            overwriteTag();
           } else {
-            grunt.verbose.writeln('Copying ' + src.cyan + ' -> ' + dest.cyan)
-            grunt.file.copy(src, dest)
-            next(null, dest)
+            shouldRemoveVersionTags();
+          }
+        }
+
+        function overwriteTag() {
+          endpoint.removeLocalTag(bowerJSON.version, function () {
+            endpoint.removeRemoteTag(bowerJSON.version, shouldRemoveVersionTags);
+          });
+        }
+
+        function shouldRemoveVersionTags() {
+          if (options.removeVersionTags) {
+            endpoint.getVersionTags(bowerJSON.version, function (tags) {
+              endpoint.removeVersionTags(tags, tag);
+            });
+          } else {
+            tag();
+          }
+        }
+
+        function tag() {
+          /* Tag name must be valid semver -- but I'm not validating this here. */
+          /* TODO: Validate this here! */
+          var tag = (options.suffixTagWithTimestamp) ? bowerJSON.version + '+' + new Date().getTime() : bowerJSON.version;
+          endpoint.tag(tag, makeTagMsg(options.packageName), function (error) {
+            tagged(tag, error)
+          });
+        }
+
+        function tagged(tag, err, stdout) {
+          if (err !== null && err !== undefined) {
+            failTask(err);
+          }
+          /* After commiting/tagging the release, push to the server */
+          endpoint.push(options.branchName, tag, pushed)
+        }
+
+        function pushed(err) {
+          if (err !== null && err !== undefined) {
+            failTask(err);
           }
 
-        }
-      }
+          /* Once we've made it this far, we're pretty much finished... */
+          process.chdir(startDir)
 
-      function getExpandedStageDest (item) {
-        var stageFile = grunt.file.expandMapping([item.dest], options.stageDir, {
-          cwd: item.orig.cwd || startDir
-        })
-        return stageFile[0].dest
-      }
+          /* TODO:
+           * Should we check if a package is registered, and register it if not?
+           * I sort of feel like this should remain the responsibility of the
+           * user, just to be safe.
+           */
 
-      function getUserDefinedDestFile(item){
-        return item.dest
-      }
-
-      function getUserDefinedDestDir(item, src){
-        var isExpandedPair = item.orig.expand || false
-        return (isExpandedPair) ? item.dest : unixifyPath(path.join(item.dest, src))
-      }
-
-      function detectDestType(dest) {
-        if(grunt.util._.endsWith(dest, '/'))
-          return 'directory'
-        return 'file'
-      }
-      function unixifyPath(filepath) {
-        if(process.platform === 'win32')
-          return filepath.replace(/\\/g, '/')
-        return filepath
-      }
-
-      function copiedFiles(err, results) {
-        var files = []
-        results.forEach(function(item) {
-          if(item instanceof Array)
-            item.forEach(function(item) { files.push(item) })
-          else if(typeof item === 'string')
-            files.push(item)
-        })
-        /* The package bower.json or component.json file needs to be added to the repository, in
-         * order for bower's magic to really work. So it needs to be added here.
-         */
-        files.push(bowerFile)
-        /* After copying files in, it is necessary to add them to the repository.
-         * The VCS plugin is not responsible for comprehension of the grunt file
-         * objects, and so we can do that here.
-         */
-        process.chdir(options.stageDir)
-        endpoint.add(files, addedFiles)
-      }
-
-      function addedFiles(err) {
-        /* Files have been added to the repository (assuming this didn't fail)
-         * At this point, commit and tag the changeset
-         */
-        var msg = grunt.option('m') || grunt.option('message')
-        if(typeof msg !== 'string' || !msg.length)
-          msg = 'Bumped version to ' + bowerJSON.version
-        endpoint.commit(msg, shouldOverwriteTag)
-      }
-
-      function shouldOverwriteTag() {
-        if (options.overwriteTag) {
-          overwriteTag();
-        } else {
-          shouldRemoveVersionTags();
-        }
-      }
-
-      function overwriteTag() {
-        endpoint.removeLocalTag(bowerJSON.version, function() {
-          endpoint.removeRemoteTag(bowerJSON.version, shouldRemoveVersionTags);
-        });
-      }
-
-      function shouldRemoveVersionTags() {
-        if (options.removeVersionTags) {
-          endpoint.getVersionTags(bowerJSON.version, function(tags) {
-            endpoint.removeVersionTags(tags, tag);
+          /* If we're debugging, don't delete the stage directory,
+           * we might want to see the contents
+           */
+          if (!grunt.option('debug'))
+            fs.rmrfSync(options.stageDir)
+          endpoint.tearDown(function (err) {
+            if (err)
+              finish(err);
+            finish();
           });
-        } else {
-          tag();
+        }
+
+        function makeTagMsg(name) {
+          return name + '@' + bowerJSON.version
+        }
+
+        function failTask(error) {
+          if (!grunt.option('debug')) {
+            process.chdir(startDir);
+            fs.rmrfSync(options.stageDir);
+          }
+
+          grunt.fail.fatal(error);
         }
       }
-
-      function tag() {
-        /* Tag name must be valid semver -- but I'm not validating this here. */
-        /* TODO: Validate this here! */
-        var tag = (options.suffixTagWithTimestamp) ? bowerJSON.version + '+' + new Date().getTime() : bowerJSON.version;
-        endpoint.tag(tag, makeTagMsg(options.packageName), function() { tagged(tag) });
-      }
-
-      function tagged(tag) {
-        /* After commiting/tagging the release, push to the server */
-        endpoint.push(options.branchName, tag, pushed)
-      }
-
-      function pushed(err) {
-        /* Once we've made it this far, we're pretty much finished... */
-        process.chdir(startDir)
-
-        /* TODO:
-         * Should we check if a package is registered, and register it if not?
-         * I sort of feel like this should remain the responsibility of the
-         * user, just to be safe.
-         */
-
-        /* If we're debugging, don't delete the stage directory,
-         * we might want to see the contents
-         */
-        if(!grunt.option('debug'))
-          fs.rmrfSync(options.stageDir)
-        endpoint.tearDown(function(err){
-          if(err)
-            finish(err);
-          finish();
-        });
-      }
-
-      function makeTagMsg(name) {
-        return name + '@' + bowerJSON.version
-      }
-    }
- })
+    })
 }
-
