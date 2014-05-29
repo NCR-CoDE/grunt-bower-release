@@ -298,31 +298,15 @@ module.exports = function(grunt) {
       }
 
       function tag() {
-        var tag = (options.suffixTagWithTimestamp) ? bowerJSON.version + '+' + new Date().getTime() : bowerJSON.version;
-
-        endpoint.tag(tag, makeTagMsg(options.packageName), function() { tagged(tag) });
-      }
-
-      function gotVersionTags(versionTags) {
-        endpoint.removeVersionTags(versionTags, tag);
-      }
-
-      function removedVersionTags() {
         /* Tag name must be valid semver -- but I'm not validating this here. */
         /* TODO: Validate this here! */
-        var actualTag = bowerJSON.version + '+' + new Date().getTime();
-        endpoint.tag(actualTag, makeTagMsg(options.packageName), function() { 
-          taggedWithTimestamp(actualTag);
-        });
+        var tag = (options.suffixTagWithTimestamp) ? bowerJSON.version + '+' + new Date().getTime() : bowerJSON.version;
+        endpoint.tag(tag, makeTagMsg(options.packageName), function() { tagged(tag) });
       }
 
       function tagged(tag) {
         /* After commiting/tagging the release, push to the server */
         endpoint.push(options.branchName, tag, pushed)
-      }
-
-      function taggedWithTimestamp(tag) {
-        endpoint.push(options.branchName, tag, pushed);
       }
 
       function pushed(err) {

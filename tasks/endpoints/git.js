@@ -29,7 +29,7 @@ function Git(grunt, async) {
     streams[1] = process.stdout
     streams[2] = process.stderr
   }
-  var objToReturn = {
+  var gitEndpoint = {
     /* Ensure that the VCS is installed on the system, and therefore usable. */
     setUp: function(parentArg, done) {
       grunt.util.spawn({
@@ -106,7 +106,7 @@ function Git(grunt, async) {
 
     removeVersionTags: function(tags, done) {
       grunt.verbose.writeln('remove version tags: ' + tags);
-      async.eachSeries(tags, objToReturn.removeLocalTag, done);
+      async.eachSeries(tags, gitEndpoint.removeLocalTag, done);
     },
 
     getVersionTags: function(version, done) {
@@ -131,7 +131,7 @@ function Git(grunt, async) {
         args: args,
         opts: { stdio: streams }
       }, function () {
-        objToReturn.removeRemoteTag(tag, done);
+        gitEndpoint.removeRemoteTag(tag, done);
       });
     },
 
@@ -179,7 +179,7 @@ function Git(grunt, async) {
     }
   };
 
-  return objToReturn;
+  return gitEndpoint;
 }
 
 Git.$inject = ['grunt', 'async'];
